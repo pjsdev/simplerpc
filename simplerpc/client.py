@@ -1,7 +1,7 @@
 from payload import Payload
 from base_dispatcher import BaseDispatcher
 
-from util import Util
+from config import Config
 
 class Client(BaseDispatcher):
     """
@@ -12,6 +12,8 @@ class Client(BaseDispatcher):
     """
     def __init__(self, tcp_ip, tcp_port, handler):
         BaseDispatcher.__init__(self, tcp_ip, tcp_port, handler)
+
+        self.message_size = None
 
         self.connect((tcp_ip, tcp_port))
         self.fail_callback = BaseDispatcher.nop
@@ -30,13 +32,15 @@ class Client(BaseDispatcher):
         self.close()
 
     def handle_read(self):
-        data = self.recv(Util.get_message_size())
+        data = self.recv(Config.get_message_size())
         if data:
-            rpc = Payload.from_string(data)
-            if rpc[0] == -1:
-                self.fail_callback(rpc[1])
+            opcode, data = Payload.from_string(data)
+            if opcode == -1: # protocol FAIL
+                self.fail_callback(data)
+            elif opcode == -2: # protocol MESSAGE_SIZE
+                self.message_size = int(data["message_size"])
             else:
-                self.handler(self, rpc[0], rpc[1])
+                self.handler(self, opcode, data)
             
     def rpc(self, opcode, args):
         payload = Payload.to_string(opcode, args)

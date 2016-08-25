@@ -3,14 +3,11 @@
 from simplerpc.server import Server
 from simplerpc.client import Client
 from simplerpc.handlers.messenger import Messenger
-from simplerpc.util import Util
 
 from simplerpc import exceptions
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 8000
-
-Util.set_message_size(256)
 
 n = None
 

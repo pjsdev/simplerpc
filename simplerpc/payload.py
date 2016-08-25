@@ -1,7 +1,7 @@
 import json
 
 from exceptions import MalformedPayload
-from util import Util
+from config import Config
 
 class Payload:
     @staticmethod
@@ -32,5 +32,5 @@ class Payload:
         payload = "{}{}".format(str(opcode), json.dumps(args))
         
         # padding
-        payload += " " * (Util.get_message_size() - len(payload))
+        payload += " " * (Config.get_message_size() - len(payload))
         return payload

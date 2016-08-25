@@ -1,8 +1,6 @@
 import socket
 import asyncore
 
-from util import Util
-
 class BaseDispatcher(asyncore.dispatcher):
 
     @staticmethod
@@ -34,5 +32,11 @@ class BaseDispatcher(asyncore.dispatcher):
         asyncore.loop()
 
     def handle_error(self):
-        raise Util.asyncore_error()
+        nil, t, v, tbinfo = asyncore.compact_traceback()
+        err = "---------- {} ------------\n {}\n{}\n -------------------".format(
+            str(t),
+            str(v), 
+            "\n".join(tbinfo.split())
+        )
+        raise t(err)
 
