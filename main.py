@@ -2,6 +2,7 @@
 
 from simplerpc.server import Server
 from simplerpc.client import Client
+from simplerpc.handlers.messenger import Messenger
 from simplerpc.util import Util
 
 TCP_IP = '127.0.0.1'
@@ -12,9 +13,10 @@ Util.set_message_size(256)
 n = None
 
 def main_client():
-    client = Client(TCP_IP, TCP_PORT)
+    msg = Messenger()
+    client = Client(TCP_IP, TCP_PORT, msg)
 
-    def func(args):
+    def func(conn, args):
         print("--- func", args)
         if raw_input("send again? y/n") == "y":
             client.rpc(1, {"hello": "world"})
@@ -27,12 +29,15 @@ def main_client():
 
     client.on_connect(handle_connect)
     client.on_disconnect(handle_disconnect)
-    client.bind(0, func)
+
+    msg.on(0, func)
+
     return client
 
 def main_server():
-    server = Server(TCP_IP, TCP_PORT)
-        
+    msg = Messenger()
+    server = Server(TCP_IP, TCP_PORT, msg)
+
     def func(conn, args):
         print("*** func---> ", args)
         server.rpc(n, 0, {"single": "rpc"})
@@ -50,7 +55,8 @@ def main_server():
     server.on_connect(handle_connect) # fires(net_id)
     server.on_disconnect(handle_disconnect) # fires(net_id)
 
-    server.bind(1, func) # fires(net_id, args)
+    msg.on(1, func) # fires(net_id, args)
+
     return server
 
 if __name__ == '__main__':
@@ -68,6 +74,7 @@ if __name__ == '__main__':
             pass
 
         finally:
-            dispatcher.close()
+            # dispatcher.close()
+            pass
     else:
         print("Usage: main.py s|c")

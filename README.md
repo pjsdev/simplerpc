@@ -8,3 +8,4 @@ TODO:
 - Deployment
 - Readme w/examples
 - License
+- Resolve base class clashes
