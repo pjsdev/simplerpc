@@ -5,8 +5,5 @@ TODO:
 
 - Logging
 - Unit tests
-- Deployment
 - Readme w/examples
-- License
 - Resolve base class clashes from server/client/connection
-- Remove the util stuff into something more intuitive
