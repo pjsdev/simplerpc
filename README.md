@@ -102,7 +102,5 @@ Clone the GIT repo and run `pip install .`
 
 - Logging
 - Unit tests
-- Commenting
 - Explore 'threading' for non blocking dispatcher loops
-- Resolve base class clashes from server/client/connection
 - Keep an eye on message size feature. It is currently quite inflexible

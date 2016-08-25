@@ -2,6 +2,9 @@ import asyncore
 
 # TODO(pjs): move this to the base of the module
 class Config:
+    """
+    Basic config object to be setup before starting server
+    """
     message_size = 1024
     lock = False
 

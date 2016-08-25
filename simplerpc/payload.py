@@ -4,8 +4,19 @@ from exceptions import MalformedPayload
 from config import Config
 
 class Payload:
+    """
+    Namespace for payload encoding/decoding
+    """
+
     @staticmethod
     def from_string(data):
+        """
+        Return tuple:
+            (int opcode, dict data) -> the rpc
+
+        Raise:
+            MalformedPayload -> simple rpc fail
+        """
         try:
             json_start = data.index("{")
         except ValueError:
@@ -28,6 +39,13 @@ class Payload:
 
     @staticmethod
     def to_string(opcode, args):
+        """
+        Return string representing a simplerpc message
+
+        Raises:
+            ValueError if we cannot convert opcode to string or
+            parse JSON
+        """
         # Note: no net_id is ever input into message
         payload = "{}{}".format(str(opcode), json.dumps(args))
         

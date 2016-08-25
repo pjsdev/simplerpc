@@ -5,10 +5,14 @@ from config import Config
 
 class Client(BaseDispatcher):
     """
-    Simple client to be subclassed
-    Will connect and send on reads (as strings) to a handler
+    Simple client handling the simplerpc protocol opcodes:
 
-    also supplies the rpc function to allow opcode,args to be transmitted
+        -1 -> FAIL
+        -2 -> MSG_SIZE
+
+    and forward anything else onto handler
+
+    Also has method rpc(opcode, data) to send rpc to server
     """
     def __init__(self, tcp_ip, tcp_port, handler):
         BaseDispatcher.__init__(self, tcp_ip, tcp_port, handler)
@@ -19,6 +23,9 @@ class Client(BaseDispatcher):
         self.fail_callback = BaseDispatcher.nop
 
     def on_fail(self, func):
+        """
+        Register a callback to handle FAIL messages from simplerpc
+        """
         if not callable(func):
             raise ValueError("Expected callable, got %s" % type(func))
 
@@ -43,5 +50,8 @@ class Client(BaseDispatcher):
                 self.handler(self, opcode, data)
             
     def rpc(self, opcode, args):
+        """
+        Send simple rpc
+        """
         payload = Payload.to_string(opcode, args)
         self.send(payload)

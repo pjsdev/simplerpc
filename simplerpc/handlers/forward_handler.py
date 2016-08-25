@@ -1,10 +1,16 @@
 from base_handler import BaseHandler
 
-class BroadcastHandler(BaseHandler):
+class ForwardHandler(BaseHandler):
+    """
+    Handler to forward RPC to all listeners
+    """
     def __init__(self):
         self.callbacks = []
 
     def listen(self, func):
+        """
+        Add a callback to be called when a message is received
+        """
         if not callable(func):
             raise ValueError("Expected callable, got %s" % type(func))
 

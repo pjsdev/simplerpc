@@ -4,7 +4,10 @@ import asyncore
 from config import Config
 
 class BaseDispatcher(asyncore.dispatcher):
-
+    """
+    Internal class for some common socket behaviour, including error handling
+    and on_connect, on_disconnect callback registering
+    """
     @staticmethod
     def nop(*args, **kwargs):
         pass
