@@ -1,9 +1,9 @@
 # simplerpc
-A super lightweight bi-directional json rpc server in python
+A super lightweight bi-directional json rpc server in python.
 
 ## How to use
 
-### Simple messenger server 
+#### Simple messenger server 
 ```py
 from simplerpc.server import Server
 from simplerpc.handlers.messenger import Messenger
@@ -30,7 +30,7 @@ server.start() # blocking loop
 
 ```
 
-### Simple messenger client
+#### Simple messenger client
 ```py
 from simplerpc.client import Client
 from simplerpc.handlers.messenger import Messenger
@@ -50,6 +50,42 @@ client.start() # blocking loop
 
 ```
 
+#### Change Message Size
+```py
+from simplerpc.config import Config
+Config.set_message_size(256) # must be done before start() called on dispatcher
+```
+
+#### Exceptions
+```py
+from simplerpc.exceptions import ArgumentMissing
+
+# somewhere in my handler / callbacks
+# this will be send using failure protocol
+# '-1{"reason":"ArgumentMissing", "message":"Expected argument 'argname' in opcode 0"}
+raise ArgumentMissing("Expected argument 'argname' in opcode 0")
+```
+
+## Protocol
+
+Payloads are a fixed sized strings of the form:
+
+    `11{"json": "data"}`
+
+Where the leading number is an opcode and the rest is json data
+
+These are extracted and sent to a handler along with the Connection/Client object that received them. A handler is a callable with signature:
+
+`(connection, opcode, data)`
+
+Negative opcodes are reserved for protocol codes, see below
+
+Failure
+    `(-1, {"reason": "FailureType", "message": "Some explanation"})`
+
+Message size, sent on client connect
+    `(-2, {"message_size": 256})`
+
 ## Installation
 
 Clone the GIT repo and run `pip install .`
@@ -58,4 +94,6 @@ Clone the GIT repo and run `pip install .`
 
 - Logging
 - Unit tests
+- Commenting
+- Explore 'threading'
 - Resolve base class clashes from server/client/connection
