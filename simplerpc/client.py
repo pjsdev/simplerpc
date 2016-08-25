@@ -14,6 +14,13 @@ class Client(BaseDispatcher):
         BaseDispatcher.__init__(self, tcp_ip, tcp_port, handler)
 
         self.connect((tcp_ip, tcp_port))
+        self.fail_callback = BaseDispatcher.nop
+
+    def on_fail(self, func):
+        if not callable(func):
+            raise ValueError("Expected callable, got %s" % type(func))
+
+        self.fail_callback = func
 
     def handle_connect(self):
         self.connect_callback()
@@ -26,7 +33,10 @@ class Client(BaseDispatcher):
         data = self.recv(Util.get_message_size())
         if data:
             rpc = Payload.from_string(data)
-            self.handler(self, rpc[0], rpc[1])
+            if rpc[0] == -1:
+                self.fail_callback(rpc[1])
+            else:
+                self.handler(self, rpc[0], rpc[1])
             
     def rpc(self, opcode, args):
         payload = Payload.to_string(opcode, args)

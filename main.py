@@ -5,6 +5,8 @@ from simplerpc.client import Client
 from simplerpc.handlers.messenger import Messenger
 from simplerpc.util import Util
 
+from simplerpc import exceptions
+
 TCP_IP = '127.0.0.1'
 TCP_PORT = 8000
 
@@ -27,8 +29,12 @@ def main_client():
     def handle_disconnect():
         print("--- disconnected")
 
+    def handle_fail(data):
+        print("--- failure", data)
+
     client.on_connect(handle_connect)
     client.on_disconnect(handle_disconnect)
+    client.on_fail(handle_fail)
 
     msg.on(0, func)
 
@@ -40,17 +46,18 @@ def main_server():
 
     def func(conn, args):
         print("*** func---> ", args)
+        raise exceptions.ArgumentMissing("Missing fake arg...")
         server.rpc(n, 0, {"single": "rpc"})
         server.rpc_all(0, {"all": "rpc"})
 
-    def handle_connect(net_id):
-        print("***", net_id)
+    def handle_connect(conn):
+        print("*** connect", conn.net_id)
         global n
-        n = net_id
+        n = conn.net_id
         server.rpc(n, 0, {"single": "rpc"})
 
     def handle_disconnect(net_id):
-        print("***", net_id)
+        print("*** disconnect", net_id)
 
     server.on_connect(handle_connect) # fires(net_id)
     server.on_disconnect(handle_disconnect) # fires(net_id)
@@ -72,9 +79,7 @@ if __name__ == '__main__':
             dispatcher.start()
         except KeyboardInterrupt:
             pass
-
         finally:
-            # dispatcher.close()
-            pass
+            dispatcher.close()
     else:
         print("Usage: main.py s|c")

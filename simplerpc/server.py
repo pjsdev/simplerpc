@@ -29,14 +29,10 @@ class Server(BaseDispatcher):
     def handle_accept(self):
         socket, address = self.accept()
         net_id = hash(address)
-        print("handle_accept()", net_id)
         
         self.connections[net_id] = Connection(socket, net_id, self.handler)
         self.connections[net_id].on_disconnect(lambda: self._disconnect(net_id))
-        
-        if self.connect_callback(net_id) == False:
-            print("Rejecting connection... ")
-            self.connections[net_id].close()
+        self.connect_callback(self.connections[net_id])
 
     def _disconnect(self, net_id):
         if net_id in self.connections:

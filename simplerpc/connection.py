@@ -1,6 +1,7 @@
 import asyncore
-from payload import Payload
 
+from payload import Payload
+from exceptions import RPCFailureException
 from util import Util
 
 class Connection(asyncore.dispatcher):
@@ -24,8 +25,12 @@ class Connection(asyncore.dispatcher):
     def handle_read(self):
         data = self.recv(Util.get_message_size())
         if data:
-            rpc = Payload.from_string(data)
-            self.handler(self, rpc[0], rpc[1])
+            try:
+                rpc = Payload.from_string(data)
+                self.handler(self, rpc[0], rpc[1])
+            except RPCFailureException as e:
+                data = {"reason": type(e).__name__, "message": e.message}
+                self.rpc(-1, data)
 
     def rpc(self, opcode, args):
         payload = Payload.to_string(opcode, args)

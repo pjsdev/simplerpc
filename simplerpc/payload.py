@@ -1,15 +1,29 @@
 import json
 
+from exceptions import MalformedPayload
 from util import Util
 
 class Payload:
     @staticmethod
     def from_string(data):
-        json_start = data.index("{")
+        try:
+            json_start = data.index("{")
+        except ValueError:
+            raise MalformedPayload("JSON data not found")
+
         opcode = int(data[:json_start])
+
+        if opcode == "":
+            raise MalformedPayload("Could not find opcode")
+
         json_string = data[json_start:]
         json_string = json_string.strip()
-        args = json.loads(json_string)
+
+        try:
+            args = json.loads(json_string)
+        except ValueError:
+            raise MalformedPayload("JSON malformed for opcode: %s" % opcode)
+
         return (opcode, args)
 
     @staticmethod
