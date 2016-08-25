@@ -6,9 +6,9 @@ A super lightweight bi-directional json rpc server in python.
 #### Simple messenger server 
 ```py
 from simplerpc.server import Server
-from simplerpc.handlers.messenger import Messenger
+from simplerpc.handlers.message_handler import MessageHandler
 
-msg = Messenger()
+msg = MessageHandler()
 server = Server('127.0.0.1', 30000, msg)
 
 def handle_0(connection, data):
@@ -33,9 +33,9 @@ server.start() # blocking loop
 #### Simple messenger client
 ```py
 from simplerpc.client import Client
-from simplerpc.handlers.messenger import Messenger
+from simplerpc.handlers.message_handler import MessageHandler
 
-msg = Messenger()
+msg = MessageHandler()
 client = Client('127.0.0.1', 30000, msg)
 
 def handle_1(connection, data): # connection here is the client
@@ -51,12 +51,18 @@ client.start() # blocking loop
 ```
 
 #### Change Message Size
+
+The message size must be set before starting the server. This is the persistent default for the server. If your application needs varying message sizes, a 'message size' protocol rpc can be sent with the new value
+
 ```py
 from simplerpc.config import Config
 Config.set_message_size(256) # must be done before start() called on dispatcher
 ```
 
 #### Exceptions
+
+In `simplerpc.exceptions` there are some useful exceptions including: ArgumentTypeError, ArgumentValueError, ArgumentMissing. When raised from a handler of associated callbacks, will end the handle and send a failure to the client.
+
 ```py
 from simplerpc.exceptions import ArgumentMissing
 
@@ -80,11 +86,11 @@ These are extracted and sent to a handler along with the Connection/Client objec
 
 Negative opcodes are reserved for protocol codes, see below
 
-Failure:
+**Failure**. A message notifying the client of a failed request
 
 `(-1, {"reason": "FailureType", "message": "Some explanation"})`
 
-Message size (sent on client connect):
+**Message size**. A message sent when a client connects to tell them how big each message is in bytes:
 
 `(-2, {"message_size": 256})`
 
@@ -97,5 +103,6 @@ Clone the GIT repo and run `pip install .`
 - Logging
 - Unit tests
 - Commenting
-- Explore 'threading'
+- Explore 'threading' for non blocking dispatcher loops
 - Resolve base class clashes from server/client/connection
+- Keep an eye on message size feature. It is currently quite inflexible

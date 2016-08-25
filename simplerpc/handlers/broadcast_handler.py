@@ -1,6 +1,6 @@
 from base_handler import BaseHandler
 
-class Broadcaster(BaseHandler):
+class BroadcastHandler(BaseHandler):
     def __init__(self):
         self.callbacks = []
 

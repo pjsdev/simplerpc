@@ -2,7 +2,7 @@
 
 from simplerpc.server import Server
 from simplerpc.client import Client
-from simplerpc.handlers.messenger import Messenger
+from simplerpc.handlers.message_handler import MessageHandler
 
 from simplerpc import exceptions
 
@@ -12,7 +12,7 @@ TCP_PORT = 8000
 n = None
 
 def main_client():
-    msg = Messenger()
+    msg = MessageHandler()
     client = Client(TCP_IP, TCP_PORT, msg)
 
     def func(conn, args):
@@ -38,7 +38,7 @@ def main_client():
     return client
 
 def main_server():
-    msg = Messenger()
+    msg = MessageHandler()
     server = Server(TCP_IP, TCP_PORT, msg)
 
     def func(conn, args):

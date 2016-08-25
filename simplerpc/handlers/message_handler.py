@@ -1,6 +1,6 @@
 from base_handler import BaseHandler
 
-class Messenger(BaseHandler):
+class MessageHandler(BaseHandler):
     def __init__(self):
         self.msg_table = {}
 
