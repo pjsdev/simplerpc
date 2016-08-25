@@ -62,7 +62,7 @@ from simplerpc.exceptions import ArgumentMissing
 
 # somewhere in my handler / callbacks
 # this will be send using failure protocol
-# '-1{"reason":"ArgumentMissing", "message":"Expected argument 'argname' in opcode 0"}
+# '-1{"reason":"ArgumentMissing", "message":"Expected argument 'argname' in opcode 0"}'
 raise ArgumentMissing("Expected argument 'argname' in opcode 0")
 ```
 
@@ -70,7 +70,7 @@ raise ArgumentMissing("Expected argument 'argname' in opcode 0")
 
 Payloads are a fixed sized strings of the form:
 
-    `11{"json": "data"}`
+`11{"json": "data"}`
 
 Where the leading number is an opcode and the rest is json data
 
@@ -80,11 +80,13 @@ These are extracted and sent to a handler along with the Connection/Client objec
 
 Negative opcodes are reserved for protocol codes, see below
 
-Failure
-    `(-1, {"reason": "FailureType", "message": "Some explanation"})`
+Failure:
 
-Message size, sent on client connect
-    `(-2, {"message_size": 256})`
+`(-1, {"reason": "FailureType", "message": "Some explanation"})`
+
+Message size (sent on client connect):
+
+`(-2, {"message_size": 256})`
 
 ## Installation
 
