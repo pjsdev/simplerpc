@@ -5,11 +5,7 @@ from config import Config
 
 class Client(BaseDispatcher):
     """
-    Simple client handling the simplerpc protocol opcodes:
-
-        -1 -> FAIL
-        -2 -> MSG_SIZE
-
+    Simple client handling the simplerpc protocol opcodes
     and forward anything else onto handler
 
     Also has method rpc(opcode, data) to send rpc to server
@@ -17,10 +13,10 @@ class Client(BaseDispatcher):
     def __init__(self, tcp_ip, tcp_port, handler):
         BaseDispatcher.__init__(self, tcp_ip, tcp_port, handler)
 
-        self.message_size = None
-
         self.connect((tcp_ip, tcp_port))
         self.fail_callback = BaseDispatcher.nop
+
+        self.decoder = Payload.Decoder()
 
     def on_fail(self, func):
         """
@@ -39,16 +35,17 @@ class Client(BaseDispatcher):
         self.close()
 
     def handle_read(self):
-        data = self.recv(Config.get_message_size())
-        if data:
-            opcode, data = Payload.from_string(data)
-            if opcode == -1: # protocol FAIL
+        buf = self.recv(1024)
+        if not buf:
+            return
+
+        for pkg in self.decoder.packages(buf):
+            opcode, data = Payload.from_string(pkg)
+            if opcode == "FAIL": # protocol FAIL
                 self.fail_callback(data)
-            elif opcode == -2: # protocol MESSAGE_SIZE
-                self.message_size = int(data["message_size"])
             else:
                 self.handler(self, opcode, data)
-            
+        
     def rpc(self, opcode, args):
         """
         Send simple rpc

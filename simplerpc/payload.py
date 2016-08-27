@@ -8,6 +8,23 @@ class Payload:
     Namespace for payload encoding/decoding
     """
 
+    class Decoder:
+        def __init__(self):
+            self.dangling = ''
+
+        def packages(self, buf):
+            while True:
+                eof = buf.find('\n')
+                if eof is -1: # didnt find end of message
+                    self.dangling += buf
+                    break
+
+                pkg = self.dangling + buf[:eof]
+                buf = buf[eof+1:]
+                self.dangling = ''
+
+                yield pkg
+
     @staticmethod
     def from_string(data):
         """
@@ -22,7 +39,7 @@ class Payload:
         except ValueError:
             raise MalformedPayload("JSON data not found")
 
-        opcode = int(data[:json_start])
+        opcode = data[:json_start]
 
         if opcode == "":
             raise MalformedPayload("Could not find opcode")
@@ -47,8 +64,4 @@ class Payload:
             parse JSON
         """
         # Note: no net_id is ever input into message
-        payload = "{}{}".format(str(opcode), json.dumps(args))
-        
-        # padding
-        payload += " " * (Config.get_message_size() - len(payload))
-        return payload
+        return "{}{}\n".format(opcode, json.dumps(args))

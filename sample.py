@@ -18,7 +18,7 @@ def main_client():
     def func(conn, args):
         print("--- func", args)
         if raw_input("send again? y/n") == "y":
-            client.rpc(1, {"hello": "world"})
+            conn.rpc("test_to_server", {"hello": "world"})
 
     def handle_connect():
         print("--- connected")
@@ -33,7 +33,7 @@ def main_client():
     client.on_disconnect(handle_disconnect)
     client.on_fail(handle_fail)
 
-    msg.on(0, func)
+    msg.on("test_to_client", func)
 
     return client
 
@@ -44,14 +44,11 @@ def main_server():
     def func(conn, args):
         print("*** func---> ", args)
         raise exceptions.ArgumentMissing("Missing fake arg...")
-        server.rpc(n, 0, {"single": "rpc"})
-        server.rpc_all(0, {"all": "rpc"})
+        conn.rpc("test_to_client", {"single": "rpc"})
 
     def handle_connect(conn):
         print("*** connect", conn.net_id)
-        global n
-        n = conn.net_id
-        server.rpc(n, 0, {"single": "rpc"})
+        conn.rpc("test_to_client", {"single": "rpc"})
 
     def handle_disconnect(net_id):
         print("*** disconnect", net_id)
@@ -59,7 +56,7 @@ def main_server():
     server.on_connect(handle_connect) # fires(net_id)
     server.on_disconnect(handle_disconnect) # fires(net_id)
 
-    msg.on(1, func) # fires(net_id, args)
+    msg.on("test_to_server", func) # fires(net_id, args)
 
     return server
 
@@ -79,4 +76,4 @@ if __name__ == '__main__':
         finally:
             dispatcher.close()
     else:
-        print("Usage: main.py s|c")
+        print("Usage: sample.py s|c")

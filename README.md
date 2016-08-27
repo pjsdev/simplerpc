@@ -50,15 +50,6 @@ client.start() # blocking loop
 
 ```
 
-#### Change Message Size
-
-The message size must be set before starting the server. This is the persistent default for the server. If your application needs varying message sizes, a 'message size' protocol rpc can be sent with the new value
-
-```py
-from simplerpc.config import Config
-Config.set_message_size(256) # must be done before start() called on dispatcher
-```
-
 #### Exceptions
 
 In `simplerpc.exceptions` there are some useful exceptions including: ArgumentTypeError, ArgumentValueError, ArgumentMissing. When raised from a handler of associated callbacks, will end the handle and send a failure to the client.
@@ -74,25 +65,17 @@ raise ArgumentMissing("Expected argument 'argname' in opcode 0")
 
 ## Protocol
 
-Payloads are a fixed sized strings of the form:
+Payloads strings of the form separated by '\n':
 
-`11{"json": "data"}`
-
-Where the leading number is an opcode and the rest is json data
+`OPNAME{"json": "data"}`
 
 These are extracted and sent to a handler along with the Connection/Client object that received them. A handler is a callable with signature:
 
 `(connection, opcode, data)`
 
-Negative opcodes are reserved for protocol codes, see below
+**Failure**. A message notifying the client of a failed request, FAIL is reserved for protocol
 
-**Failure**. A message notifying the client of a failed request
-
-`(-1, {"reason": "FailureType", "message": "Some explanation"})`
-
-**Message size**. A message sent when a client connects to tell them how big each message is in bytes:
-
-`(-2, {"message_size": 256})`
+`FAIL{"reason": "FailureType", "message": "Some explanation"}`
 
 ## Installation
 
@@ -102,5 +85,5 @@ Clone the GIT repo and run `pip install .`
 
 - Logging
 - Unit tests
+- Move to text opcodes
 - Explore 'threading' for non blocking dispatcher loops
-- Keep an eye on message size feature. It is currently quite inflexible

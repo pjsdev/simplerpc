@@ -11,12 +11,12 @@ class Connection(asyncore.dispatcher):
 
     TODO(pjs): duplicate behaviour with BaseDispatcher
 
-    This is responsible for sending out the simplerpc protocol for FAIL and 
-    MSG_SIZE on connect
+    This is responsible for sending out the simplerpc protocol 
+    for FAIL protocol
     """
     def __init__(self, socket, net_id, handler):
         """
-        Setup connection and send MSG_SIZE protocol rpc
+        Setup connection
         """
         asyncore.dispatcher.__init__(self, socket)
 
@@ -24,8 +24,7 @@ class Connection(asyncore.dispatcher):
         self.handler = handler
         self.disconnect_callback = lambda: None
 
-        # MSG_SIZE
-        self.rpc(-2, {"message_size": Config.get_message_size()})        
+        self.decoder = Payload.Decoder()
 
     def on_disconnect(self, func):
         self.disconnect_callback = func
@@ -49,14 +48,17 @@ class Connection(asyncore.dispatcher):
 
         Catch all RPCFailureException objects for the FAIL rpc of the protocol
         """
-        data = self.recv(Config.get_message_size())
-        if data:
+        buf = self.recv(1024)
+        if not buf:
+            return
+
+        for pkg in self.decoder.packages(buf):
             try:
-                opcode, data = Payload.from_string(data)
+                opcode, data = Payload.from_string(buf)
                 self.handler(self, opcode, data)
             except RPCFailureException as e:
                 data = {"reason": type(e).__name__, "message": e.message}
-                self.rpc(-1, data)
+                self.rpc("FAIL", data)
 
     def rpc(self, opcode, args):
         """
