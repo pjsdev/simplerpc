@@ -8,7 +8,7 @@ class Payload:
     Namespace for payload encoding/decoding
     """
 
-    class Decoder:
+    class BufferDecoder:
         def __init__(self):
             self.dangling = ''
 

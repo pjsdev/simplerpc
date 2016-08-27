@@ -24,7 +24,7 @@ class Connection(asyncore.dispatcher):
         self.handler = handler
         self.disconnect_callback = lambda: None
 
-        self.decoder = Payload.Decoder()
+        self.decoder = Payload.BufferDecoder()
 
     def on_disconnect(self, func):
         self.disconnect_callback = func

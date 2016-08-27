@@ -8,24 +8,23 @@ A super lightweight bi-directional json rpc server in python.
 from simplerpc.server import Server
 from simplerpc.handlers.message_handler import MessageHandler
 
-msg = MessageHandler()
-server = Server('127.0.0.1', 30000, msg)
+server = Server('127.0.0.1', 30000, MessageHandler())
+print("TCP Server listening on %s:%s" % (TCP_IP, TCP_PORT))
 
-def handle_0(connection, data):
-    print("Got RPC 0 with : %s" % data)
+def handle_thanks(connection, data):
+    print("The client showed gratitude: %s" % data["msg"])
 
 def handle_connect(connection):
-    # send RPC to connection three times
-    server.rpc_all(1, {"some_data": "this is sent to every connection"})
-    server.rpc(
-        connection.net_id, 1, 
-        {"some_data": "this is sent to whoever just connected"}
-    )
-    connection.rpc(1, {"some_data": "this is sent to whoever just connected"})
+    print("Client connected with net id: %s" % connection.net_id)
+    connection.rpc("welcome", {"msg": "Welcome to simplerpc"})
 
-msg.on(0, handle_0)
+def handle_disconnect(net_id):
+    print("Disconnect: %s" % net_id)
+
+# every connection that sends this rpc, will trigger the CB
+server.handler.on("thanks", handle_thanks)
 server.on_connect(handle_connect)
-server.on_disconnect(handle_disconnect) # callback omitted
+server.on_disconnect(handle_disconnect)
 server.start() # blocking loop
 
 ```
@@ -35,17 +34,25 @@ server.start() # blocking loop
 from simplerpc.client import Client
 from simplerpc.handlers.message_handler import MessageHandler
 
-msg = MessageHandler()
-client = Client('127.0.0.1', 30000, msg)
+client = Client('127.0.0.1', 30000, MessageHandler())
 
-def handle_1(connection, data): # connection here is the client
-    print("Got RPC 1 with : %s" % data)
-    connection.rpc(0, {"some_data": 123})
+def handle_welcome(client, data): 
+    print("The server welcomed me: %s" % data["msg"])
+    client.rpc("thanks", {"msg": "Thanks for having me simple"})
 
-msg.on(1, handle_1)
-client.on_connect(handle_connect) # callback omitted
-client.on_disconnect(handle_disconnect) # callback omitted
-client.on_fail(handle_fail) # callback omitted
+def handle_connect():
+    print("Client connected on: %s:%s" % (TCP_IP, TCP_PORT))
+
+def handle_disconnect():
+    print("Client disconnected")
+
+def handle_fail(data):
+    print("RCP Failure %s -> %s" % (data["reason"], data["message"]))
+
+client.handler.on("welcome", handle_welcome)
+client.on_connect(handle_connect)
+client.on_disconnect(handle_disconnect)
+client.on_fail(handle_fail)
 client.start() # blocking loop
 
 ```
@@ -59,8 +66,8 @@ from simplerpc.exceptions import ArgumentMissing
 
 # somewhere in my handler / callbacks
 # this will be send using failure protocol
-# '-1{"reason":"ArgumentMissing", "message":"Expected argument 'argname' in opcode 0"}'
-raise ArgumentMissing("Expected argument 'argname' in opcode 0")
+# 'FAIL{"reason":"ArgumentMissing", "message":"Expected argument 'argname' in RPC: 'test'"}'
+raise ArgumentMissing("Expected argument 'argname' in RPC: 'test'")
 ```
 
 ## Protocol
@@ -85,5 +92,5 @@ Clone the GIT repo and run `pip install .`
 
 - Logging
 - Unit tests
-- Move to text opcodes
+- Consider server/connection level handlers & forwarding
 - Explore 'threading' for non blocking dispatcher loops

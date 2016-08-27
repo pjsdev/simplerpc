@@ -9,54 +9,47 @@ from simplerpc import exceptions
 TCP_IP = '127.0.0.1'
 TCP_PORT = 8000
 
-n = None
-
 def main_client():
-    msg = MessageHandler()
-    client = Client(TCP_IP, TCP_PORT, msg)
+    client = Client(TCP_IP, TCP_PORT, MessageHandler())
 
-    def func(conn, args):
-        print("--- func", args)
-        if raw_input("send again? y/n") == "y":
-            conn.rpc("test_to_server", {"hello": "world"})
+    def handle_welcome(client, data): 
+        print("The server welcomed me: %s" % data["msg"])
+        client.rpc("thanks", {"msg": "Thanks for having me simple"})
 
     def handle_connect():
-        print("--- connected")
+        print("Client connected on: %s:%s" % (TCP_IP, TCP_PORT))
 
     def handle_disconnect():
-        print("--- disconnected")
+        print("Client disconnected")
 
     def handle_fail(data):
-        print("--- failure", data)
+        print("RCP Failure %s -> %s" % (data["reason"], data["message"]))
 
+    client.handler.on("welcome", handle_welcome)
     client.on_connect(handle_connect)
     client.on_disconnect(handle_disconnect)
     client.on_fail(handle_fail)
 
-    msg.on("test_to_client", func)
-
     return client
 
 def main_server():
-    msg = MessageHandler()
-    server = Server(TCP_IP, TCP_PORT, msg)
+    server = Server(TCP_IP, TCP_PORT, MessageHandler())
+    print("TCP Server listening on %s:%s" % (TCP_IP, TCP_PORT))
 
-    def func(conn, args):
-        print("*** func---> ", args)
-        raise exceptions.ArgumentMissing("Missing fake arg...")
-        conn.rpc("test_to_client", {"single": "rpc"})
+    def handle_thanks(connection, data):
+        print("The client showed gratitude: %s" % data["msg"])
 
-    def handle_connect(conn):
-        print("*** connect", conn.net_id)
-        conn.rpc("test_to_client", {"single": "rpc"})
+    def handle_connect(connection):
+        print("Client connected with net id: %s" % connection.net_id)
+        connection.rpc("welcome", {"msg": "Welcome to simplerpc"})
 
     def handle_disconnect(net_id):
-        print("*** disconnect", net_id)
+        print("Disconnect: %s" % net_id)
 
-    server.on_connect(handle_connect) # fires(net_id)
-    server.on_disconnect(handle_disconnect) # fires(net_id)
-
-    msg.on("test_to_server", func) # fires(net_id, args)
+    # every connection that sends this rpc, will trigger the CB
+    server.handler.on("thanks", handle_thanks)
+    server.on_connect(handle_connect)
+    server.on_disconnect(handle_disconnect)
 
     return server
 
@@ -74,6 +67,7 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             pass
         finally:
-            dispatcher.close()
+            if dispatcher:
+                dispatcher.close()
     else:
         print("Usage: sample.py s|c")

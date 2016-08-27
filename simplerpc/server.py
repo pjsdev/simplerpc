@@ -23,8 +23,6 @@ class Server(BaseDispatcher):
 
         self.connections = {}
 
-        print("TCP Server listening on %s:%s" % (tcp_ip, tcp_port))
-
     def rpc(self, net_id, opcode, args):
         """
         util method for sending rpc by net_id

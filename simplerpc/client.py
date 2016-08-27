@@ -16,7 +16,7 @@ class Client(BaseDispatcher):
         self.connect((tcp_ip, tcp_port))
         self.fail_callback = BaseDispatcher.nop
 
-        self.decoder = Payload.Decoder()
+        self.decoder = Payload.BufferDecoder()
 
     def on_fail(self, func):
         """
