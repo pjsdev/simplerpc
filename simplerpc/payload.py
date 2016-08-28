@@ -1,12 +1,14 @@
 import json
 from config import Config
 
+from exceptions import SimpleRPCException
+
 class Payload:
     """
     Namespace for payload encoding/decoding
     """
 
-    class MalformedPayload(Exception):
+    class MalformedPayload(SimpleRPCException):
         pass
 
     class BufferDecoder:
@@ -38,12 +40,12 @@ class Payload:
         try:
             json_start = data.index("{")
         except ValueError:
-            raise MalformedPayload("JSON data not found")
+            raise Payload.MalformedPayload("JSON data not found")
 
         opcode = data[:json_start]
 
         if opcode == "":
-            raise MalformedPayload("Could not find opcode")
+            raise Payload.MalformedPayload("Could not find opcode")
 
         json_string = data[json_start:]
         json_string = json_string.strip()
@@ -51,7 +53,7 @@ class Payload:
         try:
             args = json.loads(json_string)
         except ValueError:
-            raise MalformedPayload("JSON malformed for opcode: %s" % opcode)
+            raise Payload.MalformedPayload("JSON malformed for opcode: %s" % opcode)
 
         return (opcode, args)
 

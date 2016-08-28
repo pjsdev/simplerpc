@@ -25,6 +25,9 @@ class Connection(asyncore.dispatcher):
 
         self.decoder = Payload.BufferDecoder()
 
+        self.response_name = "OK"
+        self.response_data = {}
+
     def on_disconnect(self, func):
         self.disconnect_callback = func
 
@@ -41,6 +44,10 @@ class Connection(asyncore.dispatcher):
         self.disconnect_callback()
         self.close()
 
+    def set_response(self, name, data):
+        self.response_name = name
+        self.response_data = data
+
     def handle_read(self):
         """
         Read the RPC from the socket, and hand of to the handler
@@ -53,14 +60,22 @@ class Connection(asyncore.dispatcher):
 
         for pkg in self.decoder.packages(buf):
             try:
-                opcode, data = Payload.from_string(buf)
+                opcode, data = Payload.from_string(pkg)
 
                 # send to our handler first, then the server level one
                 self.handler(self, opcode, data)
-            except Exception as e:
+                self.rpc(self.response_name, self.response_data)
+
+            except SimpleRPCException as e:
                 data = {"reason": type(e).__name__, "message": e.message}
                 self.rpc("FAIL", data)
 
+            except Exception as e:
+                data = {"reason": "Uknown", "message": "Uknown Server Error"}
+                self.rpc("FAIL", data)
+                raise e
+
+                
     def rpc(self, opcode, args):
         """
         Send simplerpc

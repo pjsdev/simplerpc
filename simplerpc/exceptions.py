@@ -1,0 +1,2 @@
+class SimpleRPCException(Exception):
+    pass

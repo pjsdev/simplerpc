@@ -13,6 +13,7 @@ def main_client():
     def handle_welcome(client, data): 
         print("The server welcomed me: %s" % data["msg"])
         client.rpc("thanks", {"msg": "Thanks for having me simplerpc"})
+        client.rpc("thanks", {"msg": "This time with a callback"}, handle_res)
 
     def handle_connect():
         print("Client connected on: %s:%s" % (TCP_IP, TCP_PORT))
@@ -20,14 +21,17 @@ def main_client():
     def handle_disconnect():
         print("Client disconnected")
 
-    def handle_fail(data):
+    def handle_all_fails(data):
         print("RCP Failure %s -> %s" % (data["reason"], data["message"]))
 
+    def handle_res(conn, opname, data):
+        print("Response received", opname, data)
+
     client.handler.on("welcome", handle_welcome)
+    client.handler.on("FAIL", handle_all_fails)
     client.on_connect(handle_connect)
     client.on_disconnect(handle_disconnect)
-    client.on_fail(handle_fail)
-
+    
     return client
 
 def main_server():
@@ -36,6 +40,7 @@ def main_server():
 
     def handle_thanks(connection, data):
         print("The client showed gratitude: %s" % data["msg"])
+        connection.set_response("OKAY", {})
 
     def handle_connect(connection):
         print("Client connected with net id: %s" % connection.net_id)

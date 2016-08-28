@@ -14,18 +14,8 @@ class Client(BaseDispatcher):
         BaseDispatcher.__init__(self, tcp_ip, tcp_port, handler)
 
         self.connect((tcp_ip, tcp_port))
-        self.fail_callback = BaseDispatcher.nop
-
         self.decoder = Payload.BufferDecoder()
-
-    def on_fail(self, func):
-        """
-        Register a callback to handle FAIL messages from simplerpc
-        """
-        if not callable(func):
-            raise ValueError("Expected callable, got %s" % type(func))
-
-        self.fail_callback = func
+        self.response_callbacks = []
 
     def handle_connect(self):
         self.connect_callback()
@@ -41,14 +31,18 @@ class Client(BaseDispatcher):
 
         for pkg in self.decoder.packages(buf):
             opcode, data = Payload.from_string(pkg)
-            if opcode == "FAIL": # protocol FAIL
-                self.fail_callback(data)
-            else:
-                self.handler(self, opcode, data)
+            if opcode == "FAIL" or opcode == "OKAY":
+                self.response_callbacks.pop()(self, opcode, data)
+
+            self.handler(self, opcode, data)
         
-    def rpc(self, opcode, args):
+    def rpc(self, opcode, args, cb=None):
         """
         Send simple rpc
         """
+        if not cb:
+            cb = lambda conn,op,data: None
+
+        self.response_callbacks.insert(0, cb)
         payload = Payload.to_string(opcode, args)
         self.send(payload)
