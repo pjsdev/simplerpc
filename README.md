@@ -14,6 +14,10 @@ print("TCP Server listening on %s:%s" % (TCP_IP, TCP_PORT))
 def handle_thanks(connection, data):
     print("The client showed gratitude: %s" % data["msg"])
 
+    # we override the okay_data on the connection
+    # if we want to send a FAIL response, raise an exception (see below)
+    connection.okay_data = {"Custom OKAY data": 123}
+
 def handle_connect(connection):
     print("Client connected with net id: %s" % connection.net_id)
     connection.rpc("welcome", {"msg": "Welcome to simplerpc"})

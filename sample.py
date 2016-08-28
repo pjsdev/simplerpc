@@ -40,7 +40,7 @@ def main_server():
 
     def handle_thanks(connection, data):
         print("The client showed gratitude: %s" % data["msg"])
-        connection.set_response("OKAY", {})
+        connection.okay_data = {"Custom OKAY data": 123}
 
     def handle_connect(connection):
         print("Client connected with net id: %s" % connection.net_id)

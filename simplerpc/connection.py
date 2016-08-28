@@ -25,8 +25,7 @@ class Connection(asyncore.dispatcher):
 
         self.decoder = Payload.BufferDecoder()
 
-        self.response_name = "OK"
-        self.response_data = {}
+        self.okay_data = {}
 
     def on_disconnect(self, func):
         self.disconnect_callback = func
@@ -44,10 +43,6 @@ class Connection(asyncore.dispatcher):
         self.disconnect_callback()
         self.close()
 
-    def set_response(self, name, data):
-        self.response_name = name
-        self.response_data = data
-
     def handle_read(self):
         """
         Read the RPC from the socket, and hand of to the handler
@@ -64,7 +59,9 @@ class Connection(asyncore.dispatcher):
 
                 # send to our handler first, then the server level one
                 self.handler(self, opcode, data)
-                self.rpc(self.response_name, self.response_data)
+
+                self.rpc("OKAY", self.okay_data)
+                self.okay_data = {}
 
             except SimpleRPCException as e:
                 data = {"reason": type(e).__name__, "message": e.message}
