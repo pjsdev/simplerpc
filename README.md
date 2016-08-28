@@ -63,16 +63,20 @@ client.start() # blocking loop
 
 #### Exceptions
 
-On the server, if an Exception is raised during RPC handling, it will be caught and sent with the protocol FAIL rpc as an unknown error. To send the client error information, inherit from `simplerpc.exceptions.SimpleRPCException` and raise your error from within the handler / callbacks
+On the server, if an Exception is raised during RPC handling, it will be caught and sent as FAIL response (see protocol below) of type 'Unknown'. To send client readable error information, inherit from `simplerpc.exceptions.SimpleRPCException` and raise your error from within the handler / callbacks
 
 ```py
+from simplerpc.exceptions import SimpleRPCException
+
+class ArgumentMissing(SimpleRPCException):
+    pass
 
 # callback for rpc "some_rpc"
 def handle_some_rpc(conn, op, data):
     # this will be send using failure protocol
-    # 'FAIL{"reason":"MyCustomError", "message":"Expected argument 'argname' in RPC: 'test'"}'
+    # 'FAIL{"reason":"ArgumentMissing", "message":"Expected argument 'argname' in RPC: 'test'"}'
     if 'test' not in data:
-        raise MyCustomError("Expected argument 'argname' in RPC: 'test'")
+        raise ArgumentMissing("Expected argument 'argname' in RPC: 'test'")
 
     # ...
 ```
@@ -87,15 +91,23 @@ These are separated by newlines ('\n'). They are extracted and sent to a handler
 
 `(connection, opcode, data)`
 
-**Responses**. Reserved for the protocol are the 'FAIL' and 'OKAY' messages. These are messages considered 'responses' to each client RPC made. **FAIL*** is a message notifying the client of a failed request (see exceptions above). It takes the form.
+#### Responses
+
+The server will either send a FAIL or OKAY response to each client RPC.
+
+**FAIL** is a message notifying the client of a failed request (see exceptions above); it takes the form.
 
 `FAIL{"reason": "FailureType", "message": "Some explanation"}`
 
-**OKAY** can be sent with arbitrary data from the server
+**OKAY** can be sent with arbitrary data from the server. 
+
+`OKAY{}`
+
+Both these messages are used with a response callback queue in the client to allow for in context callback arguments to `client.rpc(...)`. One can also use a MessageHandler to capture all FAIL/OKAY messages as in the sample.
 
 ## Installation
 
-Clone the GIT repo and run `pip install .`
+Clone the GIT repo and run `pip install .` from the root
 
 ## TODO
 
