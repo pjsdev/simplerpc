@@ -1,12 +1,13 @@
 import json
-
-from exceptions import MalformedPayload
 from config import Config
 
 class Payload:
     """
     Namespace for payload encoding/decoding
     """
+
+    class MalformedPayload(Exception):
+        pass
 
     class BufferDecoder:
         def __init__(self):

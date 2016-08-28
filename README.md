@@ -21,7 +21,7 @@ def handle_connect(connection):
 def handle_disconnect(net_id):
     print("Disconnect: %s" % net_id)
 
-# every connection that sends this rpc, will trigger the CB
+# the server's handler will be copied to each connection
 server.handler.on("thanks", handle_thanks)
 server.on_connect(handle_connect)
 server.on_disconnect(handle_disconnect)
@@ -38,7 +38,7 @@ client = Client('127.0.0.1', 30000, MessageHandler())
 
 def handle_welcome(client, data): 
     print("The server welcomed me: %s" % data["msg"])
-    client.rpc("thanks", {"msg": "Thanks for having me simple"})
+    client.rpc("thanks", {"msg": "Thanks for having me simplerpc"})
 
 def handle_connect():
     print("Client connected on: %s:%s" % (TCP_IP, TCP_PORT))
@@ -59,28 +59,31 @@ client.start() # blocking loop
 
 #### Exceptions
 
-In `simplerpc.exceptions` there are some useful exceptions including: ArgumentTypeError, ArgumentValueError, ArgumentMissing. When raised from a handler of associated callbacks, will end the handle and send a failure to the client.
+On the server, if an Exception is raised, it's type and message will be caught and sent with the protocol FAIL rpc. 
 
 ```py
-from simplerpc.exceptions import ArgumentMissing
 
-# somewhere in my handler / callbacks
-# this will be send using failure protocol
-# 'FAIL{"reason":"ArgumentMissing", "message":"Expected argument 'argname' in RPC: 'test'"}'
-raise ArgumentMissing("Expected argument 'argname' in RPC: 'test'")
+# callback for rpc "some_rpc"
+def handle_some_rpc(conn, op, data):
+    # this will be send using failure protocol
+    # 'FAIL{"reason":"ValueError", "message":"Expected argument 'argname' in RPC: 'test'"}'
+    if 'test' not in data:
+        raise ValueError("Expected argument 'argname' in RPC: 'test'")
+
+    # ...
 ```
 
 ## Protocol
 
-Payloads strings of the form separated by '\n':
+Payloads strings take the form:
 
 `OPNAME{"json": "data"}`
 
-These are extracted and sent to a handler along with the Connection/Client object that received them. A handler is a callable with signature:
+These are separated by newlines ('\n'). They are extracted and sent to a handler along with the Connection/Client object that received them. A handler is a callable with signature:
 
 `(connection, opcode, data)`
 
-**Failure**. A message notifying the client of a failed request, FAIL is reserved for protocol
+**Failure**. Reserved for the protocol is the 'FAIL' message. This is a message notifying the client of a failed request. See exceptions above. It takes the form.
 
 `FAIL{"reason": "FailureType", "message": "Some explanation"}`
 
@@ -92,5 +95,4 @@ Clone the GIT repo and run `pip install .`
 
 - Logging
 - Unit tests
-- Consider server/connection level handlers & forwarding
 - Explore 'threading' for non blocking dispatcher loops

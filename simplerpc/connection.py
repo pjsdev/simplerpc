@@ -1,7 +1,6 @@
 import asyncore
 
 from payload import Payload
-from exceptions import RPCFailureException
 from config import Config
 
 class Connection(asyncore.dispatcher):
@@ -55,8 +54,10 @@ class Connection(asyncore.dispatcher):
         for pkg in self.decoder.packages(buf):
             try:
                 opcode, data = Payload.from_string(buf)
+
+                # send to our handler first, then the server level one
                 self.handler(self, opcode, data)
-            except RPCFailureException as e:
+            except Exception as e:
                 data = {"reason": type(e).__name__, "message": e.message}
                 self.rpc("FAIL", data)
 

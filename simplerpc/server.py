@@ -1,5 +1,6 @@
 import socket
 import asyncore
+from copy import copy
 
 from base_dispatcher import BaseDispatcher
 from connection import Connection
@@ -47,7 +48,8 @@ class Server(BaseDispatcher):
         socket, address = self.accept()
         net_id = hash(address)
         
-        self.connections[net_id] = Connection(socket, net_id, self.handler)
+        # we copy our handler configuration to the connection
+        self.connections[net_id] = Connection(socket, net_id, copy(self.handler))
         self.connections[net_id].on_disconnect(lambda: self._disconnect(net_id))
         self.connect_callback(self.connections[net_id])
 
