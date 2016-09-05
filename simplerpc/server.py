@@ -22,22 +22,26 @@ class Server(BaseDispatcher):
         self.socket.bind((tcp_ip, tcp_port))
         self.listen(1)
 
-        self.connections = {}
+        self._connections = {}
+
+    def connections(self):
+        for conn in self._connections.values():
+            yield conn
 
     def rpc(self, net_id, opcode, args):
         """
         util method for sending rpc by net_id
         """
-        if net_id not in self.connections:
+        if net_id not in self._connections:
             raise KeyError("Could not find net_id: %s " % net_id)
 
-        self.connections[net_id].rpc(opcode, args)
+        self._connections[net_id].rpc(opcode, args)
 
     def rpc_all(self, opcode, args):
         """
         util method for sending rpc to all connections
         """
-        for nid in self.connections.keys():
+        for nid in self._connections.keys():
             self.rpc(nid, opcode, args)
 
     def handle_accept(self):
@@ -49,18 +53,17 @@ class Server(BaseDispatcher):
         net_id = hash(address)
         
         # we copy our handler configuration to the connection
-        self.connections[net_id] = Connection(socket, net_id, copy(self.handler))
-        self.connections[net_id].on_disconnect(lambda: self._disconnect(net_id))
-        self.connect_callback(self.connections[net_id])
+        self._connections[net_id] = Connection(socket, net_id, copy(self.handler))
+        self._connections[net_id].on_disconnect(lambda: self._disconnect(net_id))
+        self.connect_callback(self._connections[net_id])
 
     def _disconnect(self, net_id):
         """
         Delete connection and fire disconnect_callback with net_id
         """
-        if net_id in self.connections:
-            del self.connections[net_id]
-
-        self.disconnect_callback(net_id)
+        if net_id in self._connections:
+            self.disconnect_callback(self._connections[net_id])
+            del self._connections[net_id]
 
     def handle_close(self):
         self.socket.shutdown(socket.SHUT_RDWR)

@@ -1,5 +1,4 @@
 import json
-from config import Config
 
 from exceptions import SimpleRPCException
 

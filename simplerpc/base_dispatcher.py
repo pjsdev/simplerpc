@@ -1,8 +1,6 @@
 import socket
 import asyncore
 
-from config import Config
-
 class BaseDispatcher(asyncore.dispatcher):
     """
     Internal class for some common socket behaviour, including error handling
@@ -34,7 +32,6 @@ class BaseDispatcher(asyncore.dispatcher):
         self.disconnect_callback = func
 
     def start(self):
-        Config.lock = True
         asyncore.loop()
 
     def handle_error(self):

@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 from simplerpc.server import Server
 from simplerpc.client import Client
 from simplerpc.handlers.message_handler import MessageHandler

@@ -1,7 +1,7 @@
 import asyncore
 
+from exceptions import SimpleRPCException
 from payload import Payload
-from config import Config
 
 class Connection(asyncore.dispatcher):
     """
@@ -68,7 +68,7 @@ class Connection(asyncore.dispatcher):
                 self.rpc("FAIL", data)
 
             except Exception as e:
-                data = {"reason": "Uknown", "message": "Uknown Server Error"}
+                data = {"reason": "Unknown", "message": "Uknown Server Error"}
                 self.rpc("FAIL", data)
                 raise e
 

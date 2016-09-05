@@ -1,8 +1,6 @@
 from payload import Payload
 from base_dispatcher import BaseDispatcher
 
-from config import Config
-
 class Client(BaseDispatcher):
     """
     Simple client handling the simplerpc protocol opcodes
