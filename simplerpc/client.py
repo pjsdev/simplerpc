@@ -20,11 +20,12 @@ class Client(BaseDispatcher):
 
     def handle_close(self):
         self.disconnect_callback()
-        self.close()
+        self.socket.close()
 
     def handle_read(self):
         buf = self.recv(1024)
         if not buf:
+            print("Disconnect?")
             return
 
         for pkg in self.decoder.packages(buf):
@@ -38,9 +39,8 @@ class Client(BaseDispatcher):
         """
         Send simple rpc
         """
-        if not cb:
-            cb = lambda conn,op,data: None
+        callback = cb if cb else lambda conn,op,data: None
 
-        self.response_callbacks.insert(0, cb)
+        self.response_callbacks.insert(0, callback)
         payload = Payload.to_string(opcode, args)
         self.send(payload.encode())

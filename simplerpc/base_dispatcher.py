@@ -34,6 +34,9 @@ class BaseDispatcher(asyncore.dispatcher):
     def start(self):
         asyncore.loop()
 
+    def close(self):
+        self.handle_close()
+
     def handle_error(self):
         nil, t, v, tbinfo = asyncore.compact_traceback()
         err = "---------- {} ------------\n {}\n{}\n -------------------".format(

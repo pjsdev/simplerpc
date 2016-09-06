@@ -27,21 +27,21 @@ class Server(BaseDispatcher):
         for conn in self._connections.values():
             yield conn
 
-    def rpc(self, net_id, opcode, args):
-        """
-        util method for sending rpc by net_id
-        """
-        if net_id not in self._connections:
-            raise KeyError("Could not find net_id: %s " % net_id)
+    # def rpc(self, net_id, opcode, args):
+    #     """
+    #     util method for sending rpc by net_id
+    #     """
+    #     if net_id not in self._connections:
+    #         raise KeyError("Could not find net_id: %s " % net_id)
 
-        self._connections[net_id].rpc(opcode, args)
+    #     self._connections[net_id].rpc(opcode, args)
 
     def rpc_all(self, opcode, args):
         """
         util method for sending rpc to all connections
         """
-        for nid in self._connections.keys():
-            self.rpc(nid, opcode, args)
+        for conn in self._connections.values():
+            conn.rpc(opcode, args)
 
     def handle_accept(self):
         """
