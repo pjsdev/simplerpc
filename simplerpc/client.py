@@ -43,4 +43,4 @@ class Client(BaseDispatcher):
 
         self.response_callbacks.insert(0, cb)
         payload = Payload.to_string(opcode, args)
-        self.send(payload)
+        self.send(payload.encode())

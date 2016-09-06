@@ -15,6 +15,7 @@ class Payload:
             self.dangling = ''
 
         def packages(self, buf):
+            buf = buf.decode()
             while True:
                 eof = buf.find('\n')
                 if eof is -1: # didnt find end of message

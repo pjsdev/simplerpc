@@ -78,4 +78,4 @@ class Connection(asyncore.dispatcher):
         Send simplerpc
         """
         payload = Payload.to_string(opcode, args)
-        self.send(payload)
+        self.send(payload.encode())
