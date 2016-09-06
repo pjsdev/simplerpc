@@ -1,5 +1,5 @@
 # simplerpc
-A super lightweight bi-directional json rpc server in python.
+A super lightweight bi-directional json rpc server in python 3.5
 
 ## How to use
 
@@ -117,4 +117,4 @@ Clone the GIT repo and run `pip install .` from the root
 
 - Logging
 - Unit tests
-- Explore 'threading' for non blocking dispatcher loops
+- Move to python 3 asyncio
