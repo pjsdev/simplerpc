@@ -1,9 +1,8 @@
 import socket
-import asyncore
 from copy import copy
 
-from base_dispatcher import BaseDispatcher
-from connection import Connection
+from .base_dispatcher import BaseDispatcher
+from .connection import Connection
 
 class Server(BaseDispatcher):
     """

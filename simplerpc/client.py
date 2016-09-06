@@ -1,5 +1,5 @@
-from payload import Payload
-from base_dispatcher import BaseDispatcher
+from .payload import Payload
+from .base_dispatcher import BaseDispatcher
 
 class Client(BaseDispatcher):
     """

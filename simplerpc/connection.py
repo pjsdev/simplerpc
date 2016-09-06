@@ -1,7 +1,7 @@
 import asyncore
 
-from exceptions import SimpleRPCException
-from payload import Payload
+from .exceptions import SimpleRPCException
+from .payload import Payload
 
 class Connection(asyncore.dispatcher):
     """

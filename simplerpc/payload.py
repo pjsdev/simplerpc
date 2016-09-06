@@ -1,6 +1,6 @@
 import json
 
-from exceptions import SimpleRPCException
+from .exceptions import SimpleRPCException
 
 class Payload:
     """
